@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CricketNation</title>
+  
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
+  <script src="/alert.js"></script>
+</head>
+
+<body>
+  <video id="player" controls></video>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const video = document.getElementById("player");
+      const source = "YOUR_HLS_STREAM_URL"; // Replace with your HLS stream URL
+      const defaultOptions = {};
+
+      if (Hls.isSupported()) {
+        const hls = new Hls(defaultOptions);
+        hls.loadSource(source);
+        hls.attachMedia(video);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, function () {
+          const availableQualities = hls.levels.map((l) => l.height);
+          availableQualities.unshift(0); // Add 'Auto' option
+
+          defaultOptions.controls = [
+            "play-large",
+            "rewind",
+            "play",
+            "fast-forward",
+            "progress",
+            "current-time",
+            "mute",
+            "volume",
+            "captions",
+            "settings",
+            "pip",
+            "fullscreen",
+            "airplay",
+          ];
+
+          defaultOptions.quality = {
+            default: 0,
+            options: availableQualities,
+            forced: true,
+            onChange: (e) => updateQuality(e),
+          };
+
+          defaultOptions.i18n = {
+            qualityLabel: {
+              0: "Auto",
+            },
+          };
+
+          const player = new Plyr(video, defaultOptions);
+        });
+
+        window.hls = hls;
+      }
+
+      function updateQuality(newQuality) {
+        if (newQuality === 0) {
+          window.hls.currentLevel = -1; // Auto quality
+        } else {
+          window.hls.levels.forEach((level, levelIndex) => {
+            if (level.height === newQuality) {
+              window.hls.currentLevel = levelIndex;
+            }
+          });
+        }
+      }
+    });
+  </script>
+</body>
+
+</html>
